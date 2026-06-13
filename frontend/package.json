@@ -1,0 +1,21 @@
+{
+  "name": "drama-youtube-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "@types/react": "18.3.21",
+    "typescript": "5.8.3"
+  }
+}

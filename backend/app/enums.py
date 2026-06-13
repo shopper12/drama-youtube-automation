@@ -1,0 +1,37 @@
+from enum import Enum
+
+
+class RightsStatus(str, Enum):
+    NOT_SENT = "NOT_SENT"
+    SENT = "SENT"
+    REPLIED = "REPLIED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    EXPIRED = "EXPIRED"
+
+
+class ProductionStatus(str, Enum):
+    IDEA = "IDEA"
+    SCRIPT_READY = "SCRIPT_READY"
+    VOICE_READY = "VOICE_READY"
+    VIDEO_DRAFT_READY = "VIDEO_DRAFT_READY"
+    PRIVATE_UPLOADED = "PRIVATE_UPLOADED"
+    READY_TO_PUBLISH = "READY_TO_PUBLISH"
+    PUBLISHED = "PUBLISHED"
+
+
+class PublicGate(str, Enum):
+    BLOCKED_NO_LICENSE = "BLOCKED_NO_LICENSE"
+    BLOCKED_REJECTED = "BLOCKED_REJECTED"
+    BLOCKED_NEEDS_REVIEW = "BLOCKED_NEEDS_REVIEW"
+    BLOCKED_LICENSE_EXPIRED = "BLOCKED_LICENSE_EXPIRED"
+    BLOCKED_SOURCE_RIGHTS = "BLOCKED_SOURCE_RIGHTS"
+    ALLOWED = "ALLOWED"
+
+
+class RightsHolderRole(str, Enum):
+    BROADCASTER = "broadcaster"
+    PRODUCER = "producer"
+    DISTRIBUTOR = "distributor"
+    OTT = "ott"
+    AGENCY = "agency"
