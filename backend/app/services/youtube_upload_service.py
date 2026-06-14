@@ -73,6 +73,12 @@ async def _get_project(project_id: int, db: AsyncSession) -> VideoProject:
     return project
 
 
+async def _refresh_project(project: VideoProject, db: AsyncSession) -> VideoProject:
+    await db.refresh(project)
+    await db.refresh(project.drama)
+    return project
+
+
 def _private_upload_body(project: VideoProject) -> dict[str, Any]:
     return {
         "snippet": {
@@ -83,13 +89,10 @@ def _private_upload_body(project: VideoProject) -> dict[str, Any]:
     }
 
 
-async def upload_private_draft(
-    project_id: int, db: AsyncSession
-) -> VideoProject:
-    result = await compliance_check(project_id, "private_draft", db)
-    if not result.allowed:
-        raise ComplianceBlockedError(result)
-    project = await _get_project(project_id, db)
+async def _upload_draft_if_needed(project: VideoProject, db: AsyncSession) -> None:
+    """Upload the private draft without running compliance_check again."""
+    if project.youtube_video_id:
+        return
     if not project.render_main_path:
         raise ValueError("Rendered main video is required")
     body = _private_upload_body(project)
@@ -98,6 +101,17 @@ async def upload_private_draft(
     project.drama.production_status = ProductionStatus.PRIVATE_UPLOADED
     await db.flush()
     await notify("private 업로드 완료", project.drama.title)
+
+
+async def upload_private_draft(
+    project_id: int, db: AsyncSession
+) -> VideoProject:
+    result = await compliance_check(project_id, "private_draft", db)
+    if not result.allowed:
+        raise ComplianceBlockedError(result)
+    project = await _get_project(project_id, db)
+    await _refresh_project(project, db)
+    await _upload_draft_if_needed(project, db)
     return project
 
 
@@ -115,8 +129,8 @@ async def schedule_publish(
     if not result.allowed:
         raise ComplianceBlockedError(result)
     project = await _get_project(project_id, db)
-    if not project.youtube_video_id:
-        await upload_private_draft(project_id, db)
+    await _refresh_project(project, db)
+    await _upload_draft_if_needed(project, db)
     project.desired_publish_at = publish_at.astimezone(timezone.utc)
     project.production_status = ProductionStatus.READY_TO_PUBLISH
     project.drama.production_status = ProductionStatus.READY_TO_PUBLISH
@@ -143,6 +157,7 @@ async def publish_now(project_id: int, db: AsyncSession) -> VideoProject:
     if not result.allowed:
         raise ComplianceBlockedError(result)
     project = await _get_project(project_id, db)
+    await _refresh_project(project, db)
     if not project.youtube_video_id:
         raise ValueError("A private draft must be uploaded first")
     await _gateway.update_status(
