@@ -32,6 +32,7 @@ async def _persist_result(
     db: AsyncSession,
 ) -> ComplianceResult:
     checked_at = utcnow()
+    await db.flush()
     entries = list(project.compliance_log or [])
     entries.append(
         {
@@ -43,7 +44,7 @@ async def _persist_result(
         }
     )
     project.compliance_log = entries
-    if mode != "private_draft":
+    if mode != "private_draft" and project.drama.public_gate != result.gate:
         project.drama.public_gate = result.gate
     db.add(
         ComplianceLog(
