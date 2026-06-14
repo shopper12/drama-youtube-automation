@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
+from sqlalchemy import select
 
 from app.enums import RightsStatus
-from app.models import Drama, VideoProject
+from app.models import ComplianceLog, Drama, VideoProject
 from app.services.compliance_service import ComplianceBlockedError
 from app.services.youtube_upload_service import (
     publish_now,
@@ -80,3 +81,19 @@ async def test_private_upload_never_contains_publish_at(db):
     project = await make_project(db)
     await upload_private_draft(project.id, db)
     assert "publishAt" not in gateway.upload_body["status"]
+
+
+@pytest.mark.asyncio
+async def test_schedule_publish_uploads_draft_without_duplicate_private_check(db):
+    gateway = RecordingGateway()
+    set_youtube_gateway(gateway)
+    project = await make_project(db, RightsStatus.APPROVED)
+    await schedule_publish(project.id, datetime.now(timezone.utc) + timedelta(hours=2), db)
+    logs = list(
+        (
+            await db.scalars(
+                select(ComplianceLog).where(ComplianceLog.project_id == project.id)
+            )
+        ).all()
+    )
+    assert [log.mode for log in logs] == ["schedule_publish"]
