@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import logging
+import os
 from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -9,7 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from ..database import AsyncSessionLocal
 from ..enums import PublicGate
-from ..models import Drama, TrendVideo, VideoProject
+from ..models import Drama, VideoProject
 from ..services.compliance_service import compliance_check
 from ..services.email_service import send_due_reminders
 from ..services.notification_service import notify
@@ -17,6 +19,7 @@ from ..services.youtube_upload_service import apply_scheduled_publish
 
 KST = ZoneInfo("Asia/Seoul")
 scheduler = AsyncIOScheduler(timezone=KST)
+logger = logging.getLogger(__name__)
 
 
 async def reminder_job() -> None:
@@ -68,9 +71,22 @@ async def license_expiry_job() -> None:
 
 
 async def trend_collection_job() -> None:
-    # API collection is credential-dependent; persisted samples are analyzed by the service.
+    api_key = os.getenv("YOUTUBE_API_KEY")
+    if not api_key:
+        logger.warning("trend_collection_job skipped: YOUTUBE_API_KEY not configured")
+        return
+
+    from googleapiclient.discovery import build
+
+    from ..services.youtube_trend_service import GoogleTrendCollector, collect_trends
+
+    service = build("youtube", "v3", developerKey=api_key)
+    collector = GoogleTrendCollector(service)
     async with AsyncSessionLocal() as db:
-        await db.execute(select(TrendVideo).limit(1))
+        count = await collect_trends(collector, db)
+        await db.commit()
+    await notify("트렌드 수집 완료", f"{count}개 영상 수집됨")
+    logger.info("trend_collection_job: collected %d videos", count)
 
 
 scheduler.add_job(
