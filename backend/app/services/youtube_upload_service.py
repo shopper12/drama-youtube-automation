@@ -74,8 +74,7 @@ async def _get_project(project_id: int, db: AsyncSession) -> VideoProject:
 
 
 async def _refresh_project(project: VideoProject, db: AsyncSession) -> VideoProject:
-    await db.refresh(project)
-    await db.refresh(project.drama)
+    await db.refresh(project, attribute_names=["drama"])
     return project
 
 

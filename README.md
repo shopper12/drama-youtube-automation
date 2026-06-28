@@ -57,6 +57,12 @@ DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/drama
 
 변경 후 `alembic upgrade head`를 실행합니다.
 
+## 무료 도구 자동 제작 플랜
+
+`GET /automation/free-tool-plan`은 YouTube 드라마 요약 채널을 무료/프리티어 도구로 끝까지 운영하기 위한 도구 스택, 프롬프트, 워크플로를 반환합니다. 드라마별 플랜은 `GET /automation/free-tool-plan/{drama_id}`에서 확인합니다.
+
+기본 스택은 YouTube Data API 무료 할당량, Gemini 무료 티어 또는 로컬 LLM, edge-tts, Whisper.cpp/faster-whisper, Canva 무료·Pexels·Pixabay, FFmpeg, Discord Webhook/Telegram Bot입니다. 모든 단계는 기존 저작권 게이트 정책을 따라 허락 전 공개 업로드와 원본 클립·공식 이미지 사용을 차단합니다.
+
 ## MVP 실행
 
 ```bash

@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import compliance, dramas, licenses, rights, scripts, trends, uploads, videos
+from .routers import automation, compliance, dramas, licenses, rights, scripts, trends, uploads, videos
 
 
 @asynccontextmanager
@@ -27,6 +27,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(automation.router)
 app.include_router(dramas.router)
 app.include_router(rights.router)
 app.include_router(licenses.router)
