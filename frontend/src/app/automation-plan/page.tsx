@@ -48,6 +48,12 @@ const monetization = [
   ["브랜드 스폰서십", "협찬·광고 표시와 채널 신뢰도를 우선합니다."]
 ];
 
+const apiUrl =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NEXT_PUBLIC_API_HOSTNAME
+    ? `https://${process.env.NEXT_PUBLIC_API_HOSTNAME}`
+    : "http://localhost:8000");
+
 export default function AutomationPlanPage() {
   return (
     <PageShell
@@ -59,7 +65,7 @@ export default function AutomationPlanPage() {
           <div className="label">검토 결론</div>
           <h2>{verdict.summary}</h2>
         </div>
-        <a className="text-link" href="http://localhost:8000/automation/free-tool-plan">
+        <a className="text-link" href={`${apiUrl}/automation/free-tool-plan`}>
           API 응답 보기
         </a>
       </section>

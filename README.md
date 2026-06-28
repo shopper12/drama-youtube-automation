@@ -67,6 +67,24 @@ DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/drama
 
 수익화 검토는 YouTube Partner Program, 제휴 마케팅, 디지털 제품, 브랜드 스폰서십으로 나누되 승인·수익을 보장하지 않습니다. 공개 전에는 YouTube 수익화 정책, 재사용·반복 콘텐츠 리스크, AI 합성/변형 콘텐츠 표시 필요 여부, 제휴/광고 고지를 사람이 확인해야 합니다.
 
+## 인기 영상 자동 제작/게시
+
+`POST /automation/top-video/run`은 최근 YouTube 드라마 요약/결말 표본에서 조회수 1위 소재를 고르고, 무클립 대본·TTS·자막·렌더 초안을 만든 뒤 YouTube 비공개 업로드까지 실행합니다. 요청 본문은 선택 사항이며 기본값은 `{"recent_days": 30, "publish_mode": "publish_now"}`입니다.
+
+실제 공개 게시에는 `YOUTUBE_PUBLISH_ENABLED=true`, `YOUTUBE_CLIENT_SECRET_FILE`, `YOUTUBE_TOKEN_FILE`이 필요합니다. 값이 없으면 local gateway로 동작해 실수로 공개 업로드하지 않습니다. 공개 게시와 예약 게시는 기존 게이트와 동일하게 라이선스 승인, 사람 검수, 소스 권리 확인을 모두 통과한 경우에만 진행됩니다.
+
+렌더에는 FFmpeg가 필요합니다. PATH에 없으면 `FFMPEG_BINARY`에 실행 파일 경로를 지정합니다.
+
+## Render 클라우드 배포
+
+루트의 `render.yaml`은 Render Blueprint용 설정입니다. GitHub 저장소를 Render Dashboard의 **New > Blueprint**로 연결하면 다음 리소스가 생성됩니다.
+
+- `drama-youtube-api`: FastAPI 백엔드 Docker web service
+- `drama-youtube-admin`: Next.js 관리자 Docker web service
+- `drama-youtube-db`: Render Postgres database
+
+초기 생성 화면에서 `sync: false`로 표시된 비밀값을 입력합니다. 최소 실행에는 `YOUTUBE_API_KEY`만 있으면 되고, 실제 YouTube 공개 업로드까지 켜려면 `YOUTUBE_PUBLISH_ENABLED=true`, `YOUTUBE_CLIENT_SECRET_JSON`, `YOUTUBE_TOKEN_JSON`을 추가합니다. `YOUTUBE_TOKEN_JSON`은 refresh token이 포함된 authorized user JSON이어야 합니다.
+
 ## MVP 실행
 
 ```bash

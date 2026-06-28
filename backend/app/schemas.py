@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from .enums import ProductionStatus, PublicGate, RightsHolderRole, RightsStatus
 
@@ -41,6 +41,14 @@ class DramaUpdate(BaseModel):
     source_memo: str | None = None
     source_rights_check: bool | None = None
     license_terms: dict[str, Any] | None = None
+
+
+class TopVideoAutomationRun(BaseModel):
+    recent_days: int = Field(default=30, ge=1, le=365)
+    publish_mode: Literal["private_only", "publish_now", "schedule_publish"] = (
+        "publish_now"
+    )
+    publish_at: datetime | None = None
 
 
 class RightsHolderCreate(BaseModel):

@@ -1,9 +1,23 @@
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import automation, compliance, dramas, licenses, rights, scripts, trends, uploads, videos
+
+
+def cors_origins() -> list[str]:
+    origins = {
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    }
+    configured = os.getenv("CORS_ALLOW_ORIGINS", "")
+    origins.update(origin.strip() for origin in configured.split(",") if origin.strip())
+    frontend_hostname = os.getenv("FRONTEND_EXTERNAL_HOSTNAME")
+    if frontend_hostname:
+        origins.add(f"https://{frontend_hostname}")
+    return sorted(origins)
 
 
 @asynccontextmanager
@@ -22,7 +36,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

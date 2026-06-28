@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
@@ -55,10 +57,82 @@ class LocalYouTubeGateway:
 
 _gateway: YouTubeGateway = LocalYouTubeGateway()
 
+YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube"]
+
 
 def set_youtube_gateway(gateway: YouTubeGateway) -> None:
     global _gateway
     _gateway = gateway
+
+
+def youtube_publish_enabled() -> bool:
+    return os.getenv("YOUTUBE_PUBLISH_ENABLED", "false").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def configure_youtube_gateway_from_env() -> bool:
+    if not youtube_publish_enabled():
+        return False
+
+    client_secret_file = os.getenv("YOUTUBE_CLIENT_SECRET_FILE")
+    client_secret_json = os.getenv("YOUTUBE_CLIENT_SECRET_JSON")
+    token_file = os.getenv("YOUTUBE_TOKEN_FILE")
+    token_json = os.getenv("YOUTUBE_TOKEN_JSON")
+    if not (client_secret_file or client_secret_json) or not (
+        token_file or token_json
+    ):
+        raise RuntimeError(
+            "YouTube OAuth client and token are required "
+            "when YOUTUBE_PUBLISH_ENABLED=true"
+        )
+
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    from googleapiclient.discovery import build
+
+    credentials = None
+    token_path = Path(token_file) if token_file else None
+    if token_json:
+        credentials = Credentials.from_authorized_user_info(
+            json.loads(token_json), YOUTUBE_SCOPES
+        )
+    elif token_path and token_path.exists():
+        credentials = Credentials.from_authorized_user_file(str(token_path), YOUTUBE_SCOPES)
+    if not credentials or not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+        else:
+            if os.getenv("YOUTUBE_OAUTH_INTERACTIVE", "false").lower() not in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }:
+                raise RuntimeError(
+                    "YOUTUBE_TOKEN_JSON or YOUTUBE_TOKEN_FILE must contain a valid "
+                    "refresh token in cloud deployments"
+                )
+            if client_secret_json:
+                flow = InstalledAppFlow.from_client_config(
+                    json.loads(client_secret_json), YOUTUBE_SCOPES
+                )
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    client_secret_file, YOUTUBE_SCOPES
+                )
+            credentials = flow.run_local_server(port=0)
+        if token_path:
+            token_path.parent.mkdir(parents=True, exist_ok=True)
+            token_path.write_text(credentials.to_json(), encoding="utf-8")
+
+    service = build("youtube", "v3", credentials=credentials)
+    set_youtube_gateway(GoogleYouTubeGateway(service))
+    return True
 
 
 async def _get_project(project_id: int, db: AsyncSession) -> VideoProject:
