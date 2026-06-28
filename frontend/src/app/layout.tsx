@@ -7,6 +7,7 @@ const navigation = [
   ["Rights Holders", "/rights-holders"],
   ["License Requests", "/license-requests"],
   ["Trend Analyzer", "/trend-analyzer"],
+  ["Automation Plan", "/automation-plan"],
   ["Script Review", "/script-review"],
   ["Render Queue", "/render-queue"],
   ["Upload Queue", "/upload-queue"],

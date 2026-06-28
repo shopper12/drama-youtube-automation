@@ -59,9 +59,13 @@ DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/drama
 
 ## 무료 도구 자동 제작 플랜
 
-`GET /automation/free-tool-plan`은 YouTube 드라마 요약 채널을 무료/프리티어 도구로 끝까지 운영하기 위한 도구 스택, 프롬프트, 워크플로를 반환합니다. 드라마별 플랜은 `GET /automation/free-tool-plan/{drama_id}`에서 확인합니다.
+`GET /automation/free-tool-plan`은 YouTube 드라마 요약 채널을 무료/프리티어 도구로 운영하기 위한 도구 스택, 프롬프트, 워크플로, 수익화 검토 포인트를 반환합니다. 드라마별 플랜은 `GET /automation/free-tool-plan/{drama_id}`에서 확인합니다.
 
 기본 스택은 YouTube Data API 무료 할당량, Gemini 무료 티어 또는 로컬 LLM, edge-tts, Whisper.cpp/faster-whisper, Canva 무료·Pexels·Pixabay, FFmpeg, Discord Webhook/Telegram Bot입니다. 모든 단계는 기존 저작권 게이트 정책을 따라 허락 전 공개 업로드와 원본 클립·공식 이미지 사용을 차단합니다.
+
+이 플랜은 "완전 자동 수익 보장" 구조가 아닙니다. Pictory, Runway, ElevenLabs 무료 플랜, CapCut, TubeBuddy, VidIQ처럼 무료 조건·워터마크·상업 이용 조건이 바뀔 수 있는 SaaS는 선택 또는 수동 도구로만 분류합니다. 특히 워터마크를 줌인으로 가리는 방식, 수익 보장 문구, 반복 템플릿 대량 업로드, 권리 확인 없는 원본 소재 사용은 금지 항목으로 반환됩니다.
+
+수익화 검토는 YouTube Partner Program, 제휴 마케팅, 디지털 제품, 브랜드 스폰서십으로 나누되 승인·수익을 보장하지 않습니다. 공개 전에는 YouTube 수익화 정책, 재사용·반복 콘텐츠 리스크, AI 합성/변형 콘텐츠 표시 필요 여부, 제휴/광고 고지를 사람이 확인해야 합니다.
 
 ## MVP 실행
 
