@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,10 +28,22 @@ class LicenseLimits:
         )
 
 
+def resolve_ffmpeg_executable() -> str | None:
+    configured = os.getenv("FFMPEG_BINARY")
+    if configured:
+        configured_path = Path(configured)
+        if configured_path.exists():
+            return str(configured_path)
+        return shutil.which(configured)
+    return shutil.which("ffmpeg")
+
+
 async def run_ffmpeg(arguments: list[str]) -> None:
-    executable = shutil.which("ffmpeg")
+    executable = resolve_ffmpeg_executable()
     if executable is None:
-        raise RuntimeError("FFmpeg executable was not found")
+        raise RuntimeError(
+            "FFmpeg executable was not found; set FFMPEG_BINARY or add ffmpeg to PATH"
+        )
     process = await asyncio.create_subprocess_exec(
         executable,
         *arguments,

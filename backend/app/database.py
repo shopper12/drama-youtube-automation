@@ -8,8 +8,16 @@ from sqlalchemy.ext.asyncio import (
 )
 
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "sqlite+aiosqlite:///./drama_automation.db"
+def normalize_database_url(url: str) -> str:
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    return url
+
+
+DATABASE_URL = normalize_database_url(
+    os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./drama_automation.db")
 )
 
 engine = create_async_engine(DATABASE_URL, future=True)

@@ -21,6 +21,7 @@ h1 { font-size: 30px; margin: 0 0 8px; }
 .label { color: #8e99ad; font-size: 13px; }
 .badge { display: inline-block; padding: 5px 8px; border-radius: 99px; font-size: 11px; background: #283044; }
 .allowed { background: #123c2b; color: #6ee7a8; }
+.warn { background: #423416; color: #f8d477; }
 .blocked { background: #421e29; color: #ff8fa1; }
 .steps { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0; }
 button { border: 0; border-radius: 8px; padding: 10px 13px; font-weight: 700; background: #ff4d67; color: white; }
@@ -28,8 +29,29 @@ button:disabled { background: #2a3140; color: #697386; }
 table { width: 100%; border-collapse: collapse; background: #101622; border-radius: 12px; overflow: hidden; }
 th, td { padding: 14px; border-bottom: 1px solid #242d3d; text-align: left; }
 th { color: #8e99ad; font-size: 12px; }
+.plan-band { display: flex; justify-content: space-between; gap: 24px; align-items: center; padding: 20px 0 28px; border-bottom: 1px solid #242d3d; margin-bottom: 22px; }
+.plan-band h2, .section-block h2 { margin: 8px 0 0; font-size: 20px; letter-spacing: 0; }
+.text-link { color: #ff8fa1; text-decoration: none; font-weight: 800; white-space: nowrap; }
+.text-link:hover { color: #ffd2da; }
+.risk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 28px; }
+.plan-card { border: 1px solid #242d3d; border-radius: 8px; padding: 16px; background: #101622; }
+.plan-card ul { margin: 14px 0 0; padding-left: 18px; color: #c8d1e1; }
+.plan-card li { margin-bottom: 10px; line-height: 1.5; }
+.section-block { margin: 0 0 28px; }
+.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #242d3d; }
+.table-wrap table { border-radius: 0; }
+.two-column { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 24px; align-items: start; }
+.number-list { margin: 14px 0 0; padding-left: 24px; color: #c8d1e1; }
+.number-list li { margin-bottom: 11px; line-height: 1.5; }
+.compact-list { display: grid; gap: 12px; margin-top: 14px; }
+.compact-list div { border-left: 3px solid #ff4d67; padding-left: 12px; }
+.compact-list strong, .compact-list span { display: block; }
+.compact-list span { color: #aeb8ca; margin-top: 4px; line-height: 1.5; }
 @media (max-width: 800px) {
   body { grid-template-columns: 1fr; }
   aside { position: static; }
   main { padding: 24px; }
+  .plan-band { display: block; }
+  .text-link { display: inline-block; margin-top: 14px; }
+  .risk-grid, .two-column { grid-template-columns: 1fr; }
 }
