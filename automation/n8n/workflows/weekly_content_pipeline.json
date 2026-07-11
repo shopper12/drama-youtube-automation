@@ -1,0 +1,71 @@
+{
+  "name": "Unified Weekly Content Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.CONTENT_AUTOMATION_API_URL || 'http://backend:8000'}}/content-automation/candidates/generate",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "{\"limit\":10}",
+        "options": {}
+      },
+      "id": "generate-candidates",
+      "name": "Generate Candidates",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.CONTENT_AUTOMATION_API_URL || 'http://backend:8000'}}/content-automation/queue?status=READY_FOR_OWNER_APPROVAL",
+        "options": {}
+      },
+      "id": "read-approval-queue",
+      "name": "Read Approval Queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [740, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $json.items || []; return items.map(item => ({json: item}));"
+      },
+      "id": "split-candidates",
+      "name": "Split Candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [980, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Generate Candidates", "type": "main", "index": 0}]]
+    },
+    "Generate Candidates": {
+      "main": [[{"node": "Read Approval Queue", "type": "main", "index": 0}]]
+    },
+    "Read Approval Queue": {
+      "main": [[{"node": "Split Candidates", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "f06f5d7e-a68c-42a6-a33b-3c89ae40d131",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

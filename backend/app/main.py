@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import compliance, dramas, licenses, rights, scripts, trends, uploads, videos
+from .routers import compliance, content_automation, dramas, licenses, rights, scripts, trends, uploads, videos
 
 
 @asynccontextmanager
@@ -16,8 +16,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Drama YouTube Automation",
-    version="0.1.0",
+    title="Unified Media Automation",
+    version="0.2.0",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -35,6 +35,7 @@ app.include_router(trends.router)
 app.include_router(scripts.router)
 app.include_router(videos.router)
 app.include_router(uploads.router)
+app.include_router(content_automation.router)
 
 
 @app.get("/health")

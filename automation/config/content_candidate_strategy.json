@@ -1,0 +1,199 @@
+{
+  "source_repository": "shopper12/ai_media_agent",
+  "project_goal": "Generate Korean YouTube Shorts and blog content that maximizes views and affiliate revenue while preserving human approval and compliance gates.",
+  "content_language": "Korean",
+  "decision_queue": {
+    "max_candidates_per_week": 10,
+    "owner_decision_initial_value": "",
+    "approval_status_initial_value": "READY_FOR_OWNER_APPROVAL",
+    "reject_requeue_policy": "Do not requeue rejected topics unless the angle or source data materially changes."
+  },
+  "scoring": {
+    "expected_profit_score": {
+      "min_queue_score": 0.6,
+      "weights": {
+        "affiliate_or_ad_unit_value": 0.3,
+        "search_trend_momentum": 0.2,
+        "competitor_content_performance": 0.2,
+        "conversion_intent_score": 0.15,
+        "repeatability": 0.1,
+        "automation_ease": 0.05
+      }
+    },
+    "viral_potential_score": {
+      "video_min_score": 0.65,
+      "weights": {
+        "hook_shock_value": 0.35,
+        "relatability_score": 0.25,
+        "share_motivation": 0.2,
+        "trend_timing": 0.2
+      }
+    }
+  },
+  "topic_tiers": [
+    {
+      "tier": 1,
+      "category": "연봉협상·이직·퇴사",
+      "title_patterns": [
+        "연봉협상 이렇게 말했더니 바로 300 올랐습니다",
+        "퇴사 전에 반드시 챙겨야 하는 돈 7가지",
+        "이직 성공한 사람들이 공통으로 한 것 3가지"
+      ],
+      "affiliate_program": "채용 플랫폼 CPA, 이력서 컨설팅",
+      "risk_level": "LOW",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.85,
+        "search_trend_momentum": 0.9,
+        "competitor_content_performance": 0.88,
+        "conversion_intent_score": 0.82,
+        "repeatability": 0.92,
+        "automation_ease": 0.88,
+        "hook_shock_value": 0.92,
+        "relatability_score": 0.95,
+        "share_motivation": 0.9,
+        "trend_timing": 0.88
+      },
+      "content_rules": [
+        "실제 수치와 출처를 발행 전에 검증할 것",
+        "보장·무조건 등 단언 표현을 사용하지 말 것"
+      ]
+    },
+    {
+      "tier": 1,
+      "category": "절약·재테크 실전",
+      "title_patterns": [
+        "월급 300만원으로 1년에 1000만원 모으는 구조 공개",
+        "고정비 세 가지만 바꿔도 월 지출이 줄어드는 이유",
+        "파킹통장 vs 적금 vs CMA 최신 기준 비교"
+      ],
+      "affiliate_program": "금융 CPA, 쿠팡 파트너스",
+      "risk_level": "MEDIUM",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.93,
+        "search_trend_momentum": 0.88,
+        "competitor_content_performance": 0.85,
+        "conversion_intent_score": 0.9,
+        "repeatability": 0.95,
+        "automation_ease": 0.8,
+        "hook_shock_value": 0.88,
+        "relatability_score": 0.93,
+        "share_motivation": 0.88,
+        "trend_timing": 0.85
+      },
+      "content_rules": [
+        "금리·가격·정책 기준일을 표시할 것",
+        "개인 상황에 따라 결과가 달라질 수 있음을 고지할 것",
+        "제휴 링크를 명확히 고지할 것"
+      ]
+    },
+    {
+      "tier": 1,
+      "category": "청약·전세·부동산 입문",
+      "title_patterns": [
+        "청약 한 번도 안 넣어봤다면 먼저 확인할 것",
+        "전세 vs 월세 최신 기준으로 다시 계산해봤습니다",
+        "부동산 계약 전에 반드시 확인할 것 5가지"
+      ],
+      "affiliate_program": "부동산 플랫폼 CPA, 교육 서비스",
+      "risk_level": "MEDIUM",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.91,
+        "search_trend_momentum": 0.87,
+        "competitor_content_performance": 0.86,
+        "conversion_intent_score": 0.88,
+        "repeatability": 0.9,
+        "automation_ease": 0.75,
+        "hook_shock_value": 0.86,
+        "relatability_score": 0.91,
+        "share_motivation": 0.89,
+        "trend_timing": 0.87
+      },
+      "content_rules": [
+        "특정 지역·단지의 확정 수익 표현을 금지할 것",
+        "법령과 청약 제도는 발행일 기준으로 재검증할 것"
+      ]
+    },
+    {
+      "tier": 1,
+      "category": "다이어트·건강 실화",
+      "title_patterns": [
+        "3개월 동안 체중을 줄일 때 실제로 바꾼 것들",
+        "운동 없이 살 뺀다는 광고를 검증해봤습니다",
+        "영양제 성분표에서 먼저 봐야 할 것"
+      ],
+      "affiliate_program": "헬스케어 CPA, 일반 소비재 제휴",
+      "risk_level": "HIGH",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.86,
+        "search_trend_momentum": 0.85,
+        "competitor_content_performance": 0.89,
+        "conversion_intent_score": 0.84,
+        "repeatability": 0.93,
+        "automation_ease": 0.82,
+        "hook_shock_value": 0.88,
+        "relatability_score": 0.94,
+        "share_motivation": 0.87,
+        "trend_timing": 0.84
+      },
+      "content_rules": [
+        "의학적 효과를 보장하지 말 것",
+        "개인차와 전문가 검토 필요성을 명시할 것",
+        "허위·과장 광고를 금지할 것"
+      ]
+    },
+    {
+      "tier": 2,
+      "category": "부업·N잡 실전",
+      "title_patterns": [
+        "직장 다니면서 시작할 수 있는 부업 3가지",
+        "블로그 수익화 6개월 기록에서 확인한 것",
+        "N잡 시작할 때 가장 많이 하는 실수 5개"
+      ],
+      "affiliate_program": "SaaS 제휴, 교육 서비스",
+      "risk_level": "MEDIUM",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.84,
+        "search_trend_momentum": 0.86,
+        "competitor_content_performance": 0.83,
+        "conversion_intent_score": 0.86,
+        "repeatability": 0.94,
+        "automation_ease": 0.9,
+        "hook_shock_value": 0.84,
+        "relatability_score": 0.9,
+        "share_motivation": 0.85,
+        "trend_timing": 0.86
+      },
+      "content_rules": [
+        "수익 인증과 예상 수익을 구분할 것",
+        "성과 보장 표현을 금지할 것"
+      ]
+    },
+    {
+      "tier": 2,
+      "category": "AI 실사용 꿀팁",
+      "title_patterns": [
+        "업무 시간을 줄여준 AI 도구 5가지",
+        "ChatGPT를 실무에서 쓸 때 자주 틀리는 설정",
+        "유료 AI 도구를 결제하기 전에 비교할 기준"
+      ],
+      "affiliate_program": "SaaS 제휴",
+      "risk_level": "LOW",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.8,
+        "search_trend_momentum": 0.88,
+        "competitor_content_performance": 0.82,
+        "conversion_intent_score": 0.78,
+        "repeatability": 0.96,
+        "automation_ease": 0.95,
+        "hook_shock_value": 0.8,
+        "relatability_score": 0.87,
+        "share_motivation": 0.83,
+        "trend_timing": 0.9
+      },
+      "content_rules": [
+        "가격과 기능을 발행 시점에 다시 확인할 것",
+        "광고·제휴 여부를 표시할 것"
+      ]
+    }
+  ]
+}
