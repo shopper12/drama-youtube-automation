@@ -1,0 +1,2 @@
+id,category,title,expected_profit_score,viral_potential_score,recommended_format,publish_channels,risk_level,approval_status,owner_decision,decision_memo
+example-001,AI 실사용 꿀팁,업무 시간을 줄여준 AI 도구 5가지,0.80,0.82,Both,"NAVER_BLOG,YOUTUBE_SHORTS",LOW,READY_FOR_OWNER_APPROVAL,,
