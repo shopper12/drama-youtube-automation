@@ -4,11 +4,15 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: sqlite+aiosqlite:////data/drama_automation.db
+      CONTENT_AUTOMATION_ROOT: /automation
+      CONTENT_AUTOMATION_DATA_DIR: /app/storage/content_automation
     volumes:
       - ./storage:/app/storage
+      - ./automation:/automation:ro
       - backend_data:/data
     ports:
       - "8000:8000"
+
   frontend:
     build: ./frontend
     environment:
@@ -18,5 +22,26 @@ services:
     ports:
       - "3000:3000"
 
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5678:5678"
+    environment:
+      TZ: ${TZ:-Asia/Seoul}
+      GENERIC_TIMEZONE: ${TZ:-Asia/Seoul}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      N8N_SECURE_COOKIE: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      CONTENT_AUTOMATION_API_URL: http://backend:8000
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./automation/n8n/workflows:/files/workflows:ro
+
 volumes:
   backend_data:
+  n8n_data:
