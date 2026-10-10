@@ -10,13 +10,22 @@ router = APIRouter(prefix="/dramas", tags=["dramas"])
 
 
 async def start_drama_workflow(drama_id: int) -> None:
+    """Create an empty project immediately; don't fabricate plot before source analysis."""
+    import logging
+    from ..models import VideoProject
     from ..services.email_service import register_and_send_license_request
-    from ..services.script_generator_service import enqueue_script_generation
 
     async with AsyncSessionLocal() as db:
-        await register_and_send_license_request(drama_id, db)
-        await enqueue_script_generation(drama_id, db)
+        project = await db.scalar(select(VideoProject).where(VideoProject.drama_id == drama_id))
+        if project is None:
+            db.add(VideoProject(drama_id=drama_id))
         await db.commit()
+        try:
+            await register_and_send_license_request(drama_id, db)
+            await db.commit()
+        except Exception:
+            await db.rollback()
+            logging.getLogger(__name__).exception("License request failed for drama_id=%s", drama_id)
 
 
 @router.post("", response_model=DramaRead, status_code=status.HTTP_201_CREATED)
