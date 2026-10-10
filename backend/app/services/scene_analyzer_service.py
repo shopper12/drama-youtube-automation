@@ -12,10 +12,10 @@ from typing import Any
 
 SCENE_PROMPT = """Analyse only events actually shown or spoken in this episode.
 Return a JSON object with a single 'scenes' array (NO markdown):
-[{"start":"MM:SS","end":"MM:SS","event":"factual description in Korean",
+[{{"start":"MM:SS","end":"MM:SS","event":"factual description in Korean",
   "characters":["names as spoken or identifiable"],"importance":1-5,
   "reason":"why needed to understand this episode","confidence":0.0-1.0,
-  "spoiler":true}]
+  "spoiler":true}}]
 Pick chronological turning points including setup, causality, key decisions, reversal
 and actual ending if present. Do NOT invent future episodes, identities or outcomes.
 Do not confuse character dialogue with confirmed facts. Scene boundaries must
