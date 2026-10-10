@@ -147,3 +147,18 @@ FFmpeg 렌더 테스트를 로컬에서 실행하려면 FFmpeg가 PATH에 있어
 ## 저장소 통합 상태
 
 최종 운영 저장소는 `shopper12/drama-youtube-automation`입니다. 기존 `shopper12/ai_media_agent`의 범용 콘텐츠 기능은 이 저장소의 `automation/`과 `/content-automation` API로 이전됐습니다.
+
+## 회차 영상 → AI 장면 분석 → 자동 영상 초안 (신규)
+
+새 관리자 화면: `http://localhost:3000/media`. 원본 영상 업로드, Gemini 사건 분석,
+회차 타임라인, 줄거리 초안, CLOVA/ElevenLabs TTS, FFmpeg 러프컷 제작을 지원합니다.
+신규 DB 마이그레이션 `0002_video_sources`를 적용해야 합니다.
+실제 영상 입력 및 외부 AI 분석은 본인이 해당 처리를 허가받은 소스에만 수행하세요.
+
+**설정, API, 구현/미구현 기능과 법적 공개 제한:** [전체 설계·운영 설명](docs/DRAMA_VIDEO_PIPELINE.md)
+
+개발 시 `.env`에 `MEDIA_ADMIN_TOKEN`을 설정하세요. 모든 드라마 변경 API와
+`/media` API는 `X-Media-Admin-Token` 헤더가 필요합니다. 신규 영상 분석은
+`GEMINI_API_KEY`가, 한국어 TTS는 선택한 공급자 키가 있어야 합니다.
+저작권자 메일은 `EMAIL_PROVIDER=log`에서 실제 발송되지 않으며 미발송 상태로 남습니다.
+**유튜브 업로드 어댑터는 기본적으로 LocalYouTubeGateway이므로 실제 채널에 게시되지 않습니다.**
