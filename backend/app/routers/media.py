@@ -180,6 +180,64 @@ async def produce(project_id: int, payload: PlanRequest,
             "status": "VIDEO_DRAFT_READY", "requires_final_review": True}
 
 
+class OpusClipRequest(BaseModel):
+    source_url: str
+    confirm_paid_processing: bool = False
+
+
+@router.post("/projects/{project_id}/shorts/opusclip", dependencies=[Depends(require_media_admin)])
+async def submit_opusclip(
+    project_id: int, payload: OpusClipRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    from ..enums import RightsStatus
+    from ..services.opusclip_service import OpusClipClient
+    project = await get_project(project_id, db)
+    drama = project.drama
+    terms = drama.license_terms or {}
+    external_rights = bool(
+        drama.rights_status == RightsStatus.APPROVED
+        and drama.human_review_approved and drama.source_rights_check
+        and not drama.license_expired
+        and terms.get("allow_external_processing", False)
+    )
+    try:
+        result = await OpusClipClient().create_shorts(
+            payload.source_url,
+            billing_confirmed=payload.confirm_paid_processing,
+            rights_verified=external_rights,
+            prompt=f"Highlights of {drama.title}: reversals, dramatic turning points, important choices",
+        )
+    except PermissionError as exc:
+        raise HTTPException(403, str(exc)) from exc
+    except (RuntimeError, ValueError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except Exception as exc:
+        from httpx import HTTPError
+        if isinstance(exc, HTTPError):
+            raise HTTPException(502, f"OpusClip API failed: {type(exc).__name__}") from exc
+        raise
+    # OpusClip's paid submission is a candidate only, not a published Shorts video.
+    project.shorts_candidates = [*(project.shorts_candidates or []),
+        {"provider": "opusclip", "submitted": True, "result": result,
+         "public_upload_allowed": False}]
+    await db.commit()
+    return {"submitted": True, "provider": "opusclip", "result": result,
+            "requires_human_review": True}
+
+
+@router.get("/opusclip/{opus_project_id}/clips", dependencies=[Depends(require_media_admin)])
+async def opusclip_clips(opus_project_id: str) -> dict:
+    from ..services.opusclip_service import OpusClipClient
+    from httpx import HTTPError
+    try:
+        return await OpusClipClient().list_shorts(opus_project_id)
+    except (ValueError, RuntimeError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except HTTPError as exc:
+        raise HTTPException(502, f"OpusClip API failed: {type(exc).__name__}") from exc
+
+
 @router.get("/projects/{project_id}/timeline", dependencies=[Depends(require_media_admin)])
 async def timeline(project_id: int, db: AsyncSession = Depends(get_db)) -> dict:
     project = await get_project(project_id, db)
