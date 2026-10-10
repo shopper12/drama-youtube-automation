@@ -100,15 +100,21 @@ async def save_video(drama_id: int, episode_number: int, upload: UploadFile,
 async def analyze_source_job(source_id: int) -> None:
     """Safe to rerun after worker restart; failures remain inspectable in database."""
     async with AsyncSessionLocal() as db:
-        source = await db.get(SourceVideo, source_id)
-        if source is None or source.status not in ("UPLOADED", "QUEUED", "FAILED"):
-            return
-        if not source.analysis_authorized:
-            source.status, source.error_message = "FAILED", "Source analysis was not authorized"
-            await db.commit()
-            return
-        source.status, source.error_message = "PROCESSING", None
+        # Atomic claim prevents HTTP task and queue-recovery scheduler charging Gemini twice.
+        from sqlalchemy import update
+        claimed = await db.execute(
+            update(SourceVideo)
+            .where(SourceVideo.id == source_id,
+                   SourceVideo.status.in_(("UPLOADED", "QUEUED", "FAILED")),
+                   SourceVideo.analysis_authorized.is_(True))
+            .values(status="PROCESSING", error_message=None)
+        )
         await db.commit()
+        if claimed.rowcount != 1:
+            return
+        source = await db.get(SourceVideo, source_id)
+        if source is None:
+            return
 
     try:
         # No silent fallback: missing API credentials must be reported, not fabricated.
