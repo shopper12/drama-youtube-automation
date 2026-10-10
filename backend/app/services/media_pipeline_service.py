@@ -13,6 +13,7 @@ from uuid import uuid4
 from fastapi import UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from ..database import AsyncSessionLocal
 from ..enums import ProductionStatus, RightsStatus
@@ -122,7 +123,7 @@ async def analyze_source_job(source_id: int) -> None:
             source.analysis_result = {"scenes": scenes, "analyzer": "gemini", "human_reviewed": False}
             source.status = "ANALYZED"
             project = (await db.scalars(
-                select(VideoProject).where(VideoProject.drama_id == source.drama_id).order_by(VideoProject.id)
+                select(VideoProject).where(VideoProject.drama_id == source.drama_id).options(selectinload(VideoProject.drama)).order_by(VideoProject.id)
             )).first()
             if project is None:
                 project = VideoProject(drama_id=source.drama_id)
