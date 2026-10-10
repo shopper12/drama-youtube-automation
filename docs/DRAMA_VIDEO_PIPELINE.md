@@ -105,8 +105,14 @@ curl -X POST "http://localhost:8000/media/projects/1/produce" \
 1. **Editorial quality:** full-length LLM retelling with character continuity, cross-episode plot conflict checks, model grounding citations, and automated factual QA, plus manual correction UI.
 2. **Advanced edit:** subtitle layout, source dialog ducking, actual cinematic transitions, image rights management, scene-level editor, horizontal and vertical cut variants.
 3. **Scalable orchestration:** durable Redis/Celery queue; separate GPU/video worker, resumable multipart uploads directly to object storage, exactly-once jobs.
-4. **Service operations:** verified Gmail OAuth bootstrap (a valid Gmail token must first exist), properly configured Google YouTube OAuth and real GoogleYouTubeGateway (default remains LocalYouTubeGateway, which **does not upload to YouTube**).
+4. **Service operations:** verified Gmail OAuth bootstrap (a valid Gmail token must first exist), properly configured Google YouTube OAuth and real GoogleYouTubeGateway (default remains LocalYouTubeGateway, which **raises an error rather than pretending to upload**).
 5. **Business analytics:** YouTube Analytics API CTR/retention/A-B thumbnail performance, quality dashboard and data-backed channel selection.
 6. **Security:** user accounts/RBAC, audit trail, CSRF where cookie-based auth is added, malware scanning, expiring signed asset URLs, removal/retention controls.
 
 See API service code and tests for exact method contracts.
+
+### Enable real YouTube uploads (operator action required)
+1. Configure Google Cloud YouTube Data API v3 and OAuth client credentials.
+2. On a trusted local machine, set `YOUTUBE_CLIENT_SECRET_FILE` and `YOUTUBE_TOKEN_FILE` and run `cd backend && python scripts/init_youtube_oauth.py`. Request the `youtube` OAuth scope because changing publication status uses `videos.update` in addition to `videos.insert`.
+3. Keep the OAuth token outside the repository, mounted securely into the backend container, and set `YOUTUBE_PROVIDER=google` plus `YOUTUBE_TOKEN_FILE=/path/in/container`.
+4. Uploaded videos are private by default. Published videos require existing `compliance_check` plus all human approvals. A YouTube API project may require platform verification to enable public scheduling.
