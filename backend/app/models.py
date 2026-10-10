@@ -69,6 +69,9 @@ class Drama(TimestampMixin, Base):
     video_projects: Mapped[list[VideoProject]] = relationship(
         back_populates="drama", cascade="all, delete-orphan"
     )
+    source_videos: Mapped[list[SourceVideo]] = relationship(
+        back_populates="drama", cascade="all, delete-orphan"
+    )
 
 
 class RightsHolder(Base):
@@ -184,3 +187,22 @@ class ComplianceLog(Base):
     reason: Mapped[str] = mapped_column(Text)
 
     project: Mapped[VideoProject] = relationship(back_populates="compliance_logs")
+
+
+class SourceVideo(TimestampMixin, Base):
+    """Locally stored user-supplied episode video; not a publishing license."""
+    __tablename__ = "source_videos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    drama_id: Mapped[int] = mapped_column(ForeignKey("dramas.id", ondelete="CASCADE"), index=True)
+    episode_number: Mapped[int] = mapped_column(Integer)
+    original_filename: Mapped[str] = mapped_column(String(255))
+    stored_path: Mapped[str] = mapped_column(Text)
+    sha256: Mapped[str] = mapped_column(String(64))
+    duration_seconds: Mapped[float] = mapped_column()
+    status: Mapped[str] = mapped_column(String(32), default="UPLOADED")
+    analysis_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    error_message: Mapped[str | None] = mapped_column(Text)
+    analysis_authorized: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    drama: Mapped[Drama] = relationship(back_populates="source_videos")
