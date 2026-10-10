@@ -4,6 +4,7 @@ import "./globals.css";
 const navigation = [
   ["Dashboard", "/"],
   ["Dramas", "/dramas"],
+  ["AI 영상 제작", "/media"],
   ["Rights Holders", "/rights-holders"],
   ["License Requests", "/license-requests"],
   ["Trend Analyzer", "/trend-analyzer"],
