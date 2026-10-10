@@ -47,10 +47,10 @@ class GoogleYouTubeGateway:
 
 class LocalYouTubeGateway:
     async def upload(self, body: dict[str, Any], file_path: str) -> str:
-        return f"local-{Path(file_path).stem}"
+        raise RuntimeError("YOUTUBE_PROVIDER=local is a disabled gateway, not an upload success")
 
     async def update_status(self, video_id: str, status: dict[str, Any]) -> None:
-        return None
+        raise RuntimeError("YOUTUBE_PROVIDER=local cannot update remote video visibility")
 
 
 _gateway: YouTubeGateway = LocalYouTubeGateway()
