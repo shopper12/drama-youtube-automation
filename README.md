@@ -162,3 +162,6 @@ FFmpeg 렌더 테스트를 로컬에서 실행하려면 FFmpeg가 PATH에 있어
 `GEMINI_API_KEY`가, 한국어 TTS는 선택한 공급자 키가 있어야 합니다.
 저작권자 메일은 `EMAIL_PROVIDER=log`에서 실제 발송되지 않으며 미발송 상태로 남습니다.
 **유튜브 업로드 어댑터는 기본적으로 LocalYouTubeGateway이므로 실제 채널에 게시되지 않습니다.**
+
+OpusClip ClipAnything 쇼츠 보조 기능은 선택 사항입니다. 유료 API 키와 외부 처리 권리,
+명시적 과금 확인이 있어야 호출됩니다. 생성된 쇼츠의 자동 공개는 구현되어 있지 않습니다.
