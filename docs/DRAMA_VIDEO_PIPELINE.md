@@ -116,3 +116,14 @@ See API service code and tests for exact method contracts.
 2. On a trusted local machine, set `YOUTUBE_CLIENT_SECRET_FILE` and `YOUTUBE_TOKEN_FILE` and run `cd backend && python scripts/init_youtube_oauth.py`. Request the `youtube` OAuth scope because changing publication status uses `videos.update` in addition to `videos.insert`.
 3. Keep the OAuth token outside the repository, mounted securely into the backend container, and set `YOUTUBE_PROVIDER=google` plus `YOUTUBE_TOKEN_FILE=/path/in/container`.
 4. Uploaded videos are private by default. Published videos require existing `compliance_check` plus all human approvals. A YouTube API project may require platform verification to enable public scheduling.
+
+## Optional OpusClip ClipAnything (explicit paid opt-in)
+Set `OPUSCLIP_API_KEY`, then `POST /media/projects/{id}/shorts/opusclip` with
+`{"source_url":"https://operator-controlled-source.example/video.mp4","confirm_paid_processing":true}`.
+The request is **blocked unless** the underlying drama is approved, human-reviewed,
+source_rights_check passes, and `license_terms.allow_external_processing=true`.
+It sends the supplied HTTPS URL to an external paid API; the system does not automatically
+upload files or publish the generated clip. Query clips using
+`GET /media/opusclip/{opus_project_id}/clips`, then manually verify and route
+approved Shorts through existing YouTube publication compliance.
+API reference: https://github.com/opus-pro/opus-skills/blob/main/skills/opusclip/references/api-reference.md
