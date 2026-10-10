@@ -131,6 +131,8 @@ async def analyze_source_job(source_id: int) -> None:
             existing = [s for s in (project.scene_plan or []) if s.get("source_id") != source.id]
             project.scene_plan = sorted(existing + scenes,
                 key=lambda s: (int(s["episode_number"]), float(s["start_seconds"])))
+            if os.getenv("AUTO_BUILD_STORYBOARD", "true").lower() == "true":
+                await prepare_storyboard(project, db)
             await db.commit()
     except Exception as exc:
         async with AsyncSessionLocal() as db:
