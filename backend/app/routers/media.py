@@ -137,6 +137,49 @@ async def roughcut(project_id: int, payload: PlanRequest,
             "format": "silent_licensed_roughcut", "requires_final_review": True}
 
 
+@router.post("/projects/{project_id}/narrate", dependencies=[Depends(require_media_admin)])
+async def narrate(project_id: int, db: AsyncSession = Depends(get_db)) -> dict:
+    from ..services.narration_pipeline_service import synthesize_narration
+    project = await get_project(project_id, db)
+    try:
+        path = await synthesize_narration(project, db)
+    except (ValueError, RuntimeError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    await db.commit()
+    return {"project_id": project_id, "tts_file_path": str(path), "status": "VOICE_READY"}
+
+
+@router.post("/projects/{project_id}/assemble", dependencies=[Depends(require_media_admin)])
+async def assemble(project_id: int, payload: PlanRequest,
+                   db: AsyncSession = Depends(get_db)) -> dict:
+    from ..services.narration_pipeline_service import assemble_narrated_draft
+    project = await get_project(project_id, db)
+    try:
+        path = await assemble_narrated_draft(project, db, payload.seconds_budget)
+    except (ValueError, RuntimeError, PermissionError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    await db.commit()
+    return {"project_id": project_id, "render_main_path": str(path),
+            "status": "VIDEO_DRAFT_READY", "public": False}
+
+
+@router.post("/projects/{project_id}/produce", dependencies=[Depends(require_media_admin)])
+async def produce(project_id: int, payload: PlanRequest,
+                  db: AsyncSession = Depends(get_db)) -> dict:
+    """Story outline -> voice -> optional licensed visual -> private local draft."""
+    from ..services.narration_pipeline_service import synthesize_narration, assemble_narrated_draft
+    project = await get_project(project_id, db)
+    try:
+        await prepare_storyboard(project, db, payload.seconds_budget)
+        await synthesize_narration(project, db)
+        path = await assemble_narrated_draft(project, db, payload.seconds_budget)
+    except (ValueError, RuntimeError, PermissionError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    await db.commit()
+    return {"project_id": project_id, "render_main_path": str(path),
+            "status": "VIDEO_DRAFT_READY", "requires_final_review": True}
+
+
 @router.get("/projects/{project_id}/timeline", dependencies=[Depends(require_media_admin)])
 async def timeline(project_id: int, db: AsyncSession = Depends(get_db)) -> dict:
     project = await get_project(project_id, db)
