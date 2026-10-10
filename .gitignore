@@ -13,3 +13,11 @@ storage/rendered/*
 storage/thumbnails/*
 storage/subtitles/*
 !storage/**/.gitkeep
+
+# Never commit uploaded episodes, generated audio, AI previews or OAuth credentials
+storage/drama_media/
+storage/content_automation/
+backend/storage/
+*oauth*token*.json
+youtube_token.json
+gmail_token.json
