@@ -13,7 +13,9 @@ from .routers import compliance, content_automation, dramas, media, licenses, ri
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from .workers.scheduler import scheduler
+    from .services.youtube_gateway_factory import configure_youtube_gateway
 
+    configure_youtube_gateway()
     scheduler.start()
     yield
     scheduler.shutdown(wait=False)
