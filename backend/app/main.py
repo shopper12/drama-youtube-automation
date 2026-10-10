@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import compliance, content_automation, dramas, licenses, rights, scripts, trends, uploads, videos
+from .routers import compliance, content_automation, dramas, media, licenses, rights, scripts, trends, uploads, videos
 
 
 @asynccontextmanager
@@ -36,6 +36,7 @@ app.include_router(scripts.router)
 app.include_router(videos.router)
 app.include_router(uploads.router)
 app.include_router(content_automation.router)
+app.include_router(media.router)
 
 
 @app.get("/health")
