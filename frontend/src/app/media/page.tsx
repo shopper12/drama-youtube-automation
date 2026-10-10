@@ -20,6 +20,7 @@ export default function MediaProduction() {
   const [sources, setSources] = useState<Source[]>([]);
   const [timeline, setTimeline] = useState<Scene[]>([]);
   const [working, setWorking] = useState(false);
+  const [publishAt, setPublishAt] = useState("");
   const [message, setMessage] = useState("");
   const project = projects.find(p => String(p.drama_id) === dramaId);
 
@@ -138,7 +139,31 @@ export default function MediaProduction() {
           <button disabled={working || !project} onClick={() => void act("영상 합성", () => jsonPost(`/media/projects/${project!.id}/assemble`, { seconds_budget: 360 }))}>3. 로컬 영상 제작</button>
           <button disabled={working || !project} onClick={() => void act("전과정", () => jsonPost(`/media/projects/${project!.id}/produce`, { seconds_budget: 360 }))}>한 번에 제작</button>
         </div>
-        <p className="caption">원본 영상 클립은 사용허락 범위 확인 후에만 합성됩니다. 이 화면은 유튜브 공개를 실행하지 않습니다.</p>
+        <p className="caption">원본 영상 클립은 사용허락 범위 확인 후에만 합성됩니다. 유튜브 공개는 별도 관리자 확인과 승인 게이트를 거칩니다.</p>
+        <h3>YouTube 업로드 (관리자 승인 필요)</h3>
+        <p className="caption">비공개 업로드는 source_rights_check 통과 시에만 가능하며, 실제 업로드에는 YOUTUBE_PROVIDER=google과 OAuth 토큰이 필요합니다.</p>
+        <div className="steps">
+          <button disabled={working || !project || !token || !["VIDEO_DRAFT_READY", "PRIVATE_UPLOADED", "READY_TO_PUBLISH"].includes(project.production_status)}
+            onClick={() => void act("유튜브 비공개 업로드", () => request(`/uploads/${project!.id}/private`, { method: "POST" }))}>
+            유튜브 비공개 업로드
+          </button>
+        </div>
+        <label>예약 공개 시각 (사용자 현지 시각)
+          <input type="datetime-local" value={publishAt} onChange={e => setPublishAt(e.target.value)}
+            style={{ marginLeft: 8, padding: 10 }} />
+        </label>
+        <div className="steps">
+          <button disabled={working || !project || !token || project.public_gate !== "ALLOWED" || !publishAt}
+            onClick={() => {
+              if (!confirm("권리자 허락 범위와 공개 일정을 확인했습니까? 예약 공개 요청을 전송합니다.")) return;
+              void act("유튜브 예약 공개", () => request(`/uploads/${project!.id}/schedule?publish_at=${encodeURIComponent(new Date(publishAt).toISOString())}`, { method: "POST" }));
+            }}>승인 후 예약 공개</button>
+          <button disabled={working || !project || !token || project.public_gate !== "ALLOWED"}
+            onClick={() => {
+              if (!confirm("이 영상이 YouTube에 즉시 공개됩니다. 저작권·내용·수익화 조건을 최종 확인했습니까?")) return;
+              void act("유튜브 즉시 공개", () => request(`/uploads/${project!.id}/publish`, { method: "POST" }));
+            }}>승인 후 즉시 공개</button>
+        </div>
       </section>
     </PageShell>
   );
