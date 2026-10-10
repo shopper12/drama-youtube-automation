@@ -110,7 +110,7 @@ class GeminiVideoAnalyzer:
                 response = client.interactions.create(
                     model=self.model,
                     input=[
-                        {"type": "video", "uri": uploaded.uri, "mime_type": uploaded.mime_type},
+                        {"type": "video", "uri": uploaded.uri, "mime_type": uploaded.mime_type, "processing": "agentic"},
                         {"type": "text", "text": SCENE_PROMPT.format(limit=int(os.getenv("MAX_SCENES_PER_EPISODE", "24")))},
                     ],
                     background=True,
