@@ -89,6 +89,23 @@ async def trend_collection_job() -> None:
     logger.info("trend_collection_job: collected %d videos", count)
 
 
+async def media_analysis_queue_job() -> None:
+    """Reclaim queued analyses if an HTTP background task was lost after restart."""
+    if not os.getenv("GEMINI_API_KEY"):
+        return
+    from ..models import SourceVideo
+    from ..services.media_pipeline_service import analyze_source_job
+
+    async with AsyncSessionLocal() as db:
+        pending = (await db.scalars(
+            select(SourceVideo).where(SourceVideo.status == "QUEUED")
+            .order_by(SourceVideo.id).limit(1)
+        )).first()
+        source_id = pending.id if pending else None
+    if source_id is not None:
+        await analyze_source_job(source_id)
+
+
 scheduler.add_job(
     reminder_job,
     "cron",
@@ -121,3 +138,8 @@ scheduler.add_job(
     id="trend-collection",
     replace_existing=True,
 )
+
+# For production horizontal scaling use a durable queue (Celery/RQ) and a single scheduler.
+scheduler.add_job(media_analysis_queue_job, "interval", minutes=2,
+                  id="media-analysis-queue", max_instances=1, coalesce=True,
+                  replace_existing=True)
