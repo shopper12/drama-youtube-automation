@@ -75,9 +75,28 @@ class LoggingEmailSender(EmailSender):
 
 
 def get_email_sender() -> EmailSender:
-    if os.getenv("EMAIL_PROVIDER", "log") == "smtp":
+    provider = os.getenv("EMAIL_PROVIDER", "log").lower()
+    if provider == "smtp":
         return SMTPEmailSender()
-    return LoggingEmailSender()
+    if provider == "gmail":
+        from google.oauth2.credentials import Credentials
+        from google.auth.transport.requests import Request
+        from googleapiclient.discovery import build
+        token_file = os.getenv("GMAIL_TOKEN_FILE", "")
+        if not token_file or not os.path.isfile(token_file):
+            raise RuntimeError("GMAIL_TOKEN_FILE must point to a previously authorized OAuth token")
+        credentials = Credentials.from_authorized_user_file(
+            token_file, ["https://www.googleapis.com/auth/gmail.send"])
+        if credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+            with open(token_file, "w", encoding="utf-8") as out:
+                out.write(credentials.to_json())
+        if not credentials.valid:
+            raise RuntimeError("Gmail OAuth token needs reauthorization")
+        return GmailAPIEmailSender(build("gmail", "v1", credentials=credentials))
+    if provider == "log":
+        return LoggingEmailSender()
+    raise ValueError(f"Unsupported EMAIL_PROVIDER: {provider}")
 
 
 def build_permission_email(drama: Drama, holder: RightsHolder) -> OutgoingEmail:
@@ -88,7 +107,7 @@ def build_permission_email(drama: Drama, holder: RightsHolder) -> OutgoingEmail:
         monetized="예정",
     ).strip()
     return OutgoingEmail(
-        to=holder.contact_email or os.getenv("RIGHTS_FALLBACK_EMAIL", ""),
+        to=holder.contact_email or "",
         subject=f"[사용 허락 요청] {drama.title} 줄거리 요약 영상",
         body=body,
     )
@@ -96,7 +115,7 @@ def build_permission_email(drama: Drama, holder: RightsHolder) -> OutgoingEmail:
 
 async def discover_rights_holder(drama: Drama, db: AsyncSession) -> RightsHolder:
     query = select(RightsHolder).where(RightsHolder.drama_id == drama.id)
-    holder = (await db.execute(query)).scalar_one_or_none()
+    holder = (await db.scalars(query.order_by(RightsHolder.verified_status.desc(), RightsHolder.id))).first()
     if holder is None:
         holder = RightsHolder(
             drama_id=drama.id,
@@ -124,15 +143,27 @@ async def register_and_send_license_request(
     )
     db.add(request)
     await db.flush()
-    message = build_permission_email(drama, holder)
-    await get_email_sender().send(message)
-    request.sent_at = utcnow()
-    request.status = RightsStatus.SENT
-    drama.rights_status = RightsStatus.SENT
-    await db.flush()
     from .notification_service import notify
 
-    await notify("메일 발송 완료", f"{drama.title} 저작권 허락 요청 발송")
+    if not holder.verified_status or not holder.contact_email:
+        request.memo = "권리자 연락처 검증 전: 실제 메일 미발송"
+        await db.flush()
+        await notify("권리자 확인 필요", f"{drama.title}: 이메일 미전송")
+        return request
+    sender = get_email_sender()
+    if isinstance(sender, LoggingEmailSender):
+        request.memo = "EMAIL_PROVIDER=log: 전송 시뮬레이션, 실제 발송하지 않음"
+        await db.flush()
+        await notify("메일 시뮬레이션", f"{drama.title}: EMAIL_PROVIDER=log")
+        return request
+    message = build_permission_email(drama, holder)
+    message_id = await sender.send(message)
+    request.sent_at = utcnow()
+    request.status = RightsStatus.SENT
+    request.memo = f"Provider message id: {message_id}"[:500]
+    drama.rights_status = RightsStatus.SENT
+    await db.flush()
+    await notify("메일 발송 완료", f"{drama.title} 저작권 허락 요청 실제 발송")
     return request
 
 
